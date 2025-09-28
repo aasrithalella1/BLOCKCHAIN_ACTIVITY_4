@@ -21,44 +21,33 @@ The main goal was to connect a wallet, interact with a smart contract, and under
 
 Open the folder on your machine.
 
-Just double-click index.html to open it in the browser.
-(For a cleaner setup, I sometimes use a local server with python -m http.server.)
+Double-click `index.html` to launch in a browser.  
+*(Optional: run `python -m http.server` and open [http://localhost:8000](http://localhost:8000).)*  
 
 Connect MetaMask when prompted.
 
+---
 
+## 🔧 Configuration Needed
+- **RPC URL** — provided by instructor  
+- **Chain ID** — matches the class blockchain network  
+- **Contract Address** — added in the script once deployed  
 
+> I don’t commit private values; they stay local for security.
 
-🔧 Configuration Needed
+---
 
-RPC URL → provided by instructor
+## 📸 Screenshots Checklist
+- 🔑 MetaMask connected (account visible)  
+- 🌐 Network added (RPC + Chain ID)  
+- 📖 Contract **read** call showing a value  
+- ✍️ Contract **write** transaction confirmed with a tx hash  
+- 📜 Git log + this GitHub page showing commit history  
 
-Chain ID → matches the class blockchain network
+---
 
-Contract Address → updated in the script once deployed
-
-(These are not committed; kept local for security.)
-
-📸 Screenshots Checklist
-
-
-🔑 MetaMask connected (account visible)
-
-🌐 Network successfully added (RPC + Chain ID)
-
-📖 Contract read call showing value
-
-✍️ Contract write transaction confirmed with tx hash
-
-📜 Git log + repo page showing commit history
-
-
-📘 Key Learnings
-
-✅ Initializing Git repos and pushing from Windows PowerShell
-
-✅ Protecting secrets with .gitignore
-
-✅ Adding MetaMask custom networks
-
-✅ Making read & write calls from a DApp front-end
+## 📘 What I Learned
+- 🖥 Initializing a Git repo and pushing from Windows PowerShell  
+- 🛡 Using `.gitignore` to protect secrets like `.env`  
+- 🌐 Adding a custom network in MetaMask  
+- 🔗 Making read/write calls from a browser DApp  
