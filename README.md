@@ -29,24 +29,36 @@ Connect MetaMask when prompted.
 
 
 
-🖼️ Screenshots I Plan to Capture
+🔧 Configuration Needed
 
-Connecting MetaMask with my account visible
+RPC URL → provided by instructor
 
-Network successfully added (showing RPC + Chain ID)
+Chain ID → matches the class blockchain network
 
-Contract read call returning a value
+Contract Address → updated in the script once deployed
 
-Contract write transaction confirmed with a tx hash
+(These are not committed; kept local for security.)
 
-Repo history (Git log and this GitHub page)
+📸 Screenshots Checklist
 
-📘 What I Learned
 
-How to initialize a Git repository and push to GitHub from Windows PowerShell
+🔑 MetaMask connected (account visible)
 
-How to connect MetaMask to a custom blockchain network
+🌐 Network successfully added (RPC + Chain ID)
 
-Basics of handling environment variables like .env (to keep private keys safe)
+📖 Contract read call showing value
 
-Importance of .gitignore to avoid leaking sensitive files
+✍️ Contract write transaction confirmed with tx hash
+
+📜 Git log + repo page showing commit history
+
+
+📘 Key Learnings
+
+✅ Initializing Git repos and pushing from Windows PowerShell
+
+✅ Protecting secrets with .gitignore
+
+✅ Adding MetaMask custom networks
+
+✅ Making read & write calls from a DApp front-end
