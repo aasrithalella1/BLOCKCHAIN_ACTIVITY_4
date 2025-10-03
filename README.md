@@ -1,53 +1,82 @@
-# Blockchain Activity 4 – Minimal DApp
+# Activity 4 — ERC-20 Mini DApp (Team 06)
 
-This repository contains my work for **Activity 4** in the blockchain course.  
-The project is a very simple decentralized application (DApp) built with plain HTML and JavaScript.  
-The main goal was to connect a wallet, interact with a smart contract, and understand the workflow of deploying a DApp.
-
----
-
-## 📂 Repository Structure
-- `index.html` → front-end page that loads in a browser  
-- `.gitignore` → ignores environment files, node_modules, and build artifacts  
-- (more files will be added as I expand the project)
+I built a tiny single-page DApp that talks to my ERC-20 token through MetaMask.  
+The page connects a wallet, switches to the right network, loads token info, shows my balance, and lets me send tokens.
 
 ---
 
-## 🚀 How I Run It
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/aasrithalella1/BLOCKCHAIN_ACTIVITY_4.git
-
-
-Open the folder on your machine.
-
-Double-click `index.html` to launch in a browser.  
-*(Optional: run `python -m http.server` and open [http://localhost:8000](http://localhost:8000).)*  
-
-Connect MetaMask when prompted.
+## TL;DR
+- **My network:** DIDLab **Team 06** — Chain ID **31342** (`0x7a6e`), RPC `https://hh-06.didlab.org`
+- **Teammate’s default network:** DIDLab **Team 07** — Chain ID **31343** (`0x7a6f`), RPC `https://hh-07.didlab.org`
+- **Token:** `Team06Token (T06)`, **18** decimals
+- **Token address (Team 06):** `0x5FbDB2315678afecb367f032d93F642f64180aa3`
+- **Important:** Transfers only work when **both wallets are on the same network**. For this activity we used **Team 06**.
 
 ---
 
-## 🔧 Configuration Needed
-- **RPC URL** — provided by instructor  
-- **Chain ID** — matches the class blockchain network  
-- **Contract Address** — added in the script once deployed  
-
-> I don’t commit private values; they stay local for security.
-
----
-
-## 📸 Screenshots Checklist
-- 🔑 MetaMask connected (account visible)  
-- 🌐 Network added (RPC + Chain ID)  
-- 📖 Contract **read** call showing a value  
-- ✍️ Contract **write** transaction confirmed with a tx hash  
-- 📜 Git log + this GitHub page showing commit history  
+## What I built
+- A one-file web app (`index.html`) with plain HTML + vanilla JS.
+- No backend; it calls `window.ethereum` (MetaMask) directly.
+- Reads ERC-20 `name/symbol/decimals/balanceOf`, and sends `transfer`.
+- Shows a minimal “Tx Log” so I can copy the transaction hash.
 
 ---
 
-## 📘 What I Learned
-- 🖥 Initializing a Git repo and pushing from Windows PowerShell  
-- 🛡 Using `.gitignore` to protect secrets like `.env`  
-- 🌐 Adding a custom network in MetaMask  
-- 🔗 Making read/write calls from a browser DApp  
+## Network details
+
+### Me — Team 06
+- **Network name:** DIDLab Team 06  
+- **RPC URL:** https://hh-06.didlab.org  
+- **Chain ID (dec):** 31342  
+- **Chain ID (hex):** 0x7a6e  
+- **Currency:** ETH
+
+### Teammate — Team 07
+- **Network name:** DIDLab Team 07  
+- **RPC URL:** https://hh-07.didlab.org  
+- **Chain ID (dec):** 31343  
+- **Chain ID (hex):** 0x7a6f  
+- **Currency:** ETH
+
+> If my teammate is on Team 07, they must switch to **Team 06** to receive/send **T06** for this demo.
+
+---
+
+## How I run the app locally
+```bash
+# from the repo root
+npx http-server -p 8000
+# then open:
+http://127.0.0.1:8000
+
+> If my teammate starts on Team 07, they must switch to **Team 06** before we exchange **T06**.
+
+---
+
+## Run locally
+~~~bash
+# from the repo root
+npx http-server -p 8000
+# then open this in a browser with MetaMask installed:
+http://127.0.0.1:8000
+~~~
+
+---
+
+## How to use the page
+1. In the page, set **Team = 06**.  
+2. Click **Connect & Switch Network** → approve in MetaMask.  
+3. Paste the token address: `0x5FbDB2315678afecb367f032d93F642f64180aa3`.  
+4. Click **Load Token** → **Token** shows `Team06Token (T06), 18d, 0x…` and **Balance** appears.  
+5. (Optional) Click **Add Token to MetaMask** so T06 shows in **Assets**.  
+6. **Transfer**: paste recipient 0x (also on Team 06), enter amount in human units (e.g., `10`), click **Send**, approve.
+
+---
+
+## What I verified / what I got
+- Wallet connection + network switch to **Team 06** ✅  
+- Token metadata & balance loaded from chain ✅  
+- Sent **T06** to my teammate; they sent some back ✅  
+- **Proof:** Tx hash appears in my page’s **Tx Log**; balances update in the app and in MetaMask.
+
+
