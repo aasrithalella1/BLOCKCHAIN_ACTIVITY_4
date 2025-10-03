@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Local ERC-20 DApp (localhost:8545)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#0b1320;color:#e6eaf2;margin:0}
+    .wrap{max-width:880px;margin:40px auto;padding:24px;border:1px solid #24314a;border-radius:14px;background:#0f1a2b}
+    input,button{padding:10px 12px;border:1px solid #314164;background:#0b1527;color:#e6eaf2;border-radius:10px}
+    button{cursor:pointer}
+    button.primary{background:#335cff;border-color:#335cff}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .card{padding:12px;border:1px solid #24314a;border-radius:10px;background:#0b1527;margin:10px 0}
+    .ok{color:#7be07b}.warn{color:#ffd166}.err{color:#ff6b6b}
+    a{color:#9bc1ff}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h2>💻 Local ERC-20 DApp (Hardhat @ http://127.0.0.1:8545, ChainId 31337)</h2>
+
+  <div class="card">
+    <div class="row">
+      <input id="tokenAddr" class="mono" placeholder="Paste deployed token 0x..." style="flex:1" />
+      <button id="btnConnect" class="primary">1) Connect + Switch</button>
+      <button id="btnLoad">2) Load Token</button>
+      <button id="btnRefresh">Refresh Balance</button>
+      <button id="btnWatch">Add to MetaMask</button>
+    </div>
+    <div class="row mono">
+      <div id="acct" style="flex:1">Account: —</div>
+      <div id="net"  style="flex:1">Network: —</div>
+    </div>
+    <div class="row mono">
+      <div id="meta" style="flex:1">Token: —</div>
+      <div id="bal"  style="flex:1">Balance: —</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Transfer</h3>
+    <div class="row">
+      <input id="to" class="mono" placeholder="Recipient 0x..." style="flex:1" />
+      <input id="amt" class="mono" placeholder="Amount (human units)" style="width:220px" />
+      <button id="btnSend" class="primary">Send</button>
+    </div>
+    <div id="txlog" class="mono"></div>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    createPublicClient, createWalletClient, custom,
+    getAddress, formatUnits, parseUnits
+  } from "https://esm.sh/viem@2.37.5";
+
+  const LOCAL = {
+    id: 31337,
+    name: "Hardhat Localhost",
+    nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+    rpcUrls: { default: { http: ["http://127.0.0.1:8545"] } }
+  };
+  const CHAIN_ID_HEX = "0x" + LOCAL.id.toString(16);
+
+  const ERC20_ABI = [
+    { type:"function", name:"name",    stateMutability:"view", inputs:[], outputs:[{type:"string"}]},
+    { type:"function", name:"symbol",  stateMutability:"view", inputs:[], outputs:[{type:"string"}]},
+    { type:"function", name:"decimals",stateMutability:"view", inputs:[], outputs:[{type:"uint8"}]},
+    { type:"function", name:"balanceOf", stateMutability:"view", inputs:[{name:"account",type:"address"}], outputs:[{type:"uint256"}]},
+    { type:"function", name:"transfer",  stateMutability:"nonpayable", inputs:[{name:"to",type:"address"},{name:"amount",type:"uint256"}], outputs:[{type:"bool"}]},
+    { type:"event", name:"Transfer", inputs:[
+      {indexed:true, name:"from", type:"address"},
+      {indexed:true, name:"to",   type:"address"},
+      {indexed:false,name:"value",type:"uint256"}
+    ]},
+  ];
+
+  const el = (id)=>document.getElementById(id);
+  const tokenInput = el("tokenAddr");
+  const acctEl = el("acct"), netEl = el("net"), metaEl = el("meta"), balEl = el("bal"), txlog = el("txlog");
+
+  let walletClient, publicClient, account, token, decimals=18, symbol="TOKEN", name="Token";
+
+  function save(){ localStorage.setItem("local-dapp", JSON.stringify({ token: tokenInput.value })); }
+  (()=>{
+    try { const s = JSON.parse(localStorage.getItem("local-dapp")||"{}"); if (s.token) tokenInput.value = s.token; } catch {}
+  })();
+
+  async function addOrSwitchLocal() {
+    try {
+      await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID_HEX }] });
+    } catch (e) {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: CHAIN_ID_HEX,
+          chainName: LOCAL.name,
+          rpcUrls: LOCAL.rpcUrls.default.http,
+          nativeCurrency: LOCAL.nativeCurrency
+        }]
+      });
+    }
+  }
+
+  async function connect() {
+    if (!window.ethereum) throw new Error("MetaMask not found");
+    await addOrSwitchLocal();
+
+    walletClient = createWalletClient({ chain: LOCAL, transport: custom(window.ethereum) });
+    publicClient = createPublicClient({ chain: LOCAL, transport: custom(window.ethereum) });
+
+    const addrs = await window.ethereum.request({ method: "eth_requestAccounts" });
+    account = getAddress(addrs[0]);
+    acctEl.textContent = "Account: " + account;
+    netEl.textContent = "Network: " + LOCAL.name + " (#" + LOCAL.id + ")";
+    logOk("Connected to localhost");
+  }
+
+  async function loadToken() {
+    token = getAddress(tokenInput.value.trim());
+    save();
+    name     = await publicClient.readContract({ address: token, abi: ERC20_ABI, functionName: "name" });
+    symbol   = await publicClient.readContract({ address: token, abi: ERC20_ABI, functionName: "symbol" });
+    decimals = Number(await publicClient.readContract({ address: token, abi: ERC20_ABI, functionName: "decimals" }));
+    metaEl.textContent = `Token: ${name} (${symbol}), ${decimals}d @ ${token}`;
+
+    publicClient.watchContractEvent({
+      address: token, abi: ERC20_ABI, eventName: "Transfer",
+      onLogs: (logs)=>{ for (const l of logs) {
+        if (l.args.from?.toLowerCase()===account.toLowerCase() || l.args.to?.toLowerCase()===account.toLowerCase()) { refresh(); break; }
+      }}
+    });
+    await refresh();
+  }
+
+  async function refresh() {
+    if (!token || !account) return;
+    const bal = await publicClient.readContract({ address: token, abi: ERC20_ABI, functionName: "balanceOf", args: [account] });
+    balEl.textContent = "Balance: " + formatUnits(bal, decimals) + " " + symbol;
+  }
+
+  async function send() {
+    const to  = getAddress(el("to").value.trim());
+    const amt = parseUnits(el("amt").value.trim(), decimals);
+    const hash = await walletClient.writeContract({ address: token, abi: ERC20_ABI, functionName: "transfer", args: [to, amt] });
+    logWarn("Submitted: " + hash);
+    const rcpt = await publicClient.waitForTransactionReceipt({ hash });
+    logOk("Mined in block " + rcpt.blockNumber + " (gas " + rcpt.gasUsed + ")");
+  }
+
+  async function watchAsset() {
+    await window.ethereum.request({
+      method: "wallet_watchAsset",
+      params: { type: "ERC20", options: { address: token, symbol, decimals } }
+    });
+    logOk("Token added to MetaMask.");
+  }
+
+  function logOk(m){ txlog.innerHTML = `<div class="ok">${m}</div>` + txlog.innerHTML; }
+  function logWarn(m){ txlog.innerHTML = `<div class="warn">${m}</div>` + txlog.innerHTML; }
+  function logErr(m){ txlog.innerHTML = `<div class="err">${m}</div>` + txlog.innerHTML; }
+
+  el("btnConnect").onclick = async ()=>{ try{ await connect(); } catch(e){ logErr(e.message||e);} };
+  el("btnLoad").onclick    = async ()=>{ try{ await loadToken(); } catch(e){ logErr(e.message||e);} };
+  el("btnRefresh").onclick = async ()=>{ try{ await refresh(); } catch(e){ logErr(e.message||e);} };
+  el("btnSend").onclick    = async ()=>{ try{ await send(); } catch(e){ logErr(e.shortMessage||e.message||e);} };
+  el("btnWatch").onclick   = async ()=>{ try{ await watchAsset(); } catch(e){ logErr(e.message||e);} };
+</script>
+</body>
+</html>
